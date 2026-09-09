@@ -27,12 +27,19 @@ LIGHT, BORDER = "#f4f7f5", "#e2e6e3"
 RED, AMBER = "#e5484d", "#e0a012"
 
 st.set_page_config(page_title="Lead & Customer Intelligence · Turquoise Digital",
-                   page_icon="🟢", layout="wide")
+                   page_icon="🟢", layout="wide", initial_sidebar_state="expanded")
 
 st.markdown(f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@700;800;900&family=Hanken+Grotesk:wght@400;500;600;700&display=swap');
-html,body,[class*="css"],p,span,div,label {{ font-family:'Hanken Grotesk',sans-serif; color:{BODY}; }}
+/* Force LIGHT brand theme regardless of the viewer's Streamlit theme */
+html, body, .stApp {{ color-scheme: light; }}
+.stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"],
+[data-testid="stHeader"], .main, .block-container {{ background:#ffffff !important; }}
+[data-testid="stSidebar"], [data-testid="stSidebar"] > div {{ background:{LIGHT} !important; }}
+[data-testid="stSidebar"] * {{ color:{INK} !important; }}
+[data-testid="stMetricLabel"] {{ color:{MUTED} !important; }}
+html,body,[class*="css"],p,span,div,label,li {{ font-family:'Hanken Grotesk',sans-serif; color:{BODY}; }}
 h1,h2,h3,h4 {{ font-family:'Archivo',sans-serif; font-weight:800; color:{INK}; letter-spacing:-0.03em; }}
 [data-testid="stToolbar"], #MainMenu, footer, [data-testid="stDecoration"] {{ display:none !important; }}
 .block-container {{ padding-top:2.2rem; max-width:1300px; }}
