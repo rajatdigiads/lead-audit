@@ -1,53 +1,39 @@
-# Lead-Quality Engine + Audit App (Build #1)
+# Turquoise — Lead & Customer Intelligence (v2)
 
-Classifies inbound Google Ads leads into **spam / duplicate / existing_customer / qualified / unqualified**, with an evidence trail for every decision. **No Google Ads API required** — it reads a lead export (form webhook, CRM, or CSV).
+One tool, **two profiles**. No Google Ads API required — reads a CSV export.
 
-Two ways to run it: a **command-line** version and a **branded web app** (Streamlit).
+- **Trades / Local-service leads** — scores web-form leads: spam / duplicate / existing / qualified / unqualified, **plus lead-quality by campaign** (where to add negatives / shift budget).
+- **Ecommerce / Customer list** — segments a customer DB by value (VIP / repeat / one-time / never-bought / junk), shows revenue concentration, region, B2B & list-health, and builds **Google Ads Customer Match** files.
 
-## Files
-- `lead_quality_engine.py` — the engine. All rules & thresholds live in `CONFIG`.
-- `core_io.py` — shared CSV column auto-detection + row→lead mapping.
-- `app.py` — **Streamlit audit app** (Turquoise-branded, drag-drop CSV).
-- `load_csv.py` — command-line runner.
-- `run_report.py` — builds the markdown report.
-- `simulate_leads.py` — 17 labelled test leads.
-- `test_engine.py` — 56 assertions → **56 passed, 0 failed**.
-- `sample_real_leads.csv` — a realistic sample export to try.
-- `requirements.txt`, `.streamlit/config.toml` — for the app.
-
----
-
-## Option A — the web app (recommended for audits)
-
-### Run it locally
+## Run
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
-A browser tab opens. In the sidebar set the client's **service area** suburbs/postcodes (and optionally paste known customers), then drag in a lead CSV. You get the "find the leak" headline, metric tiles, a breakdown chart, categorized lead tables with reasons, and CSV/JSON downloads.
+Pick the profile in the sidebar, set the client details, upload a CSV.
 
-### Deploy it free (so you can send a link / screen-share)
-1. Put this folder in a GitHub repo.
-2. Go to **share.streamlit.io** → New app → point at your repo → `app.py`.
-3. It builds and gives you a public URL. (Keep client data out of the repo — upload CSVs at runtime only.)
+## Deploy (custom domain)
+Push to a **private** GitHub repo → deploy on **Render** or **Railway** →
+add `audit.yourdomain` as a custom domain (one CNAME record). Or free (no custom
+domain) on share.streamlit.io.
 
-## Option B — command line
-```bash
-python3 test_engine.py            # prove it works (56 passed)
-python3 run_report.py             # demo report from simulated leads
-python3 load_csv.py your.csv      # run on a real export -> report.md
-```
-First run with no file writes `client_config.json` — edit `service_area_terms` and `existing_customers`, then re-run.
+Start command for Render/Railway:
+`streamlit run app.py --server.port $PORT --server.address 0.0.0.0`
 
----
+## Files
+- `app.py` — the two-mode web app (Turquoise branded).
+- `lead_quality_engine.py` + `core_io.py` — trades lead engine.
+- `customer_list.py` — ecommerce customer-list engine + Customer Match exports.
+- `load_csv.py` / `run_report.py` — command-line trades runner.
+- `test_engine.py` — 56 tests (trades engine).
+- `sample_real_leads.csv` — sample for trades mode.
 
-## Accuracy lever
-`service_area_terms` per client is the single biggest accuracy setting — it's what marks out-of-area leads as unqualified. Set it for every client.
+## Google Ads exports (ecommerce mode)
+- **customer_match_high_value** — repeat+VIP buyers → value-based bidding seed + lookalikes.
+- **customer_match_win_back** — one-time buyers → 2nd-purchase campaign.
+- **exclusion_never_purchased** — signed-up-never-bought → exclude from prospecting.
+Files use Google's Customer Match template columns; Google hashes on upload.
 
-## What's NOT here yet (next builds)
-- Call-transcript scoring (Build A2)
-- Offline conversion upload to Google Ads (Tier 3 — needs API)
-- n8n live wiring (form → score → CRM/Slack)
-
-## Rule design
-Evidence-based: every spam/duplicate/existing result carries `reasons`; every score shows the exact +/− points. Nothing is invented.
+## Note
+Validated on synthetic trades data + a real Shopify B2B export. Tune per client:
+service-area (trades) and VIP threshold (ecommerce) are the main levers.
